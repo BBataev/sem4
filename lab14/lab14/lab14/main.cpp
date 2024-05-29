@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <utility>
 
 using namespace std;
 
@@ -39,6 +40,22 @@ void outMatr(const vector<vector<int>>& matrix) {
     }
 }
 
+//Выводит вершины
+void outVertex(set<int>& subset1, set<int>& subset2) {
+    cout << "Массив вершин номер 1: ";
+    for (int elem : subset1) {
+        cout << elem + 1 << " ";
+    }
+    cout << endl;
+
+    cout << "Массив вершин номер 2: ";
+    for (int elem : subset2) {
+        cout << elem + 1 << " " ;
+    }
+    cout << endl;
+    cout << endl;
+}
+
 //Считает внутренние связи
 int countInternalEdges(const std::set<int>& vertices, const vector<vector<int>>& matr) {
     int internalEdges = 0;
@@ -59,8 +76,8 @@ int countInternalEdges(const std::set<int>& vertices, const vector<vector<int>>&
     return internalEdges;
 }
 
-//Меняет 2 элемента местами при улучшении
-void swap(set<int>& subset1, set<int>& subset2, int i, int j, vector<vector<int>>& matrix, bool& improved) {
+//Находит число улучшения
+void swap(set<int> subset1, set<int> subset2, int i, int j, vector<vector<int>> matrix, bool& improved) {
     int currentInternalEdges1 = countInternalEdges(subset1, matrix);
     int currentInternalEdges2 = countInternalEdges(subset2, matrix);
 
@@ -75,36 +92,10 @@ void swap(set<int>& subset1, set<int>& subset2, int i, int j, vector<vector<int>
 
     if (newInternalEdges1 + newInternalEdges2 > currentInternalEdges1 + currentInternalEdges2) {
         improved = true;
-        cout << "Number of internal edges in subset v1-v4: " << newInternalEdges1 << endl;
-        cout << "Number of internal edges in subset v5-v8: " << newInternalEdges2 << endl;
-
-        cout << "Subset 1: ";
-        for (int elem : subset1) {
-            cout << elem+1 << " ";
-        }
-        cout << endl;
-
-        cout << "Subset 2: ";
-        for (int elem : subset2) {
-            cout << elem+1 << " ";
-        }
-        cout << endl;
-    }
-    else {
-        subset1.erase(j);
-        subset2.erase(i);
-
-        subset1.insert(i);
-        subset2.insert(j);
     }
 }
 
-set<int> optimize(vector<vector<int>>& matrix) {
-    // Подмножество 1: v1, v2, v3, v4
-    set<int> subset1 = { 0, 1, 2, 3 };
-    // Подмножество 2: v5, v6, v7, v8
-    set<int> subset2 = { 4, 5, 6, 7 };
-
+void optimize(set<int>& subset1, set<int>& subset2, vector<vector<int>>& matrix) {
     bool improvement = true;
 
     while (improvement) {
@@ -113,20 +104,32 @@ set<int> optimize(vector<vector<int>>& matrix) {
         set<int> subset1_copy = subset1;
         set<int> subset2_copy = subset2;
 
+        int a = 0;
+
         for (int i : subset1_copy) {
             for (int j : subset2_copy) {
                 swap(subset1, subset2, i, j, matrix, improvement);
 
-                if (improvement) {
-                    i++;
+                if (improvement && (subset1.find(i) != subset1.end()) && (subset2.find(j) != subset2.end())) {
+                    subset1.erase(i);
+                    subset2.erase(j);
+
+                    subset1.insert(j);
+                    subset2.insert(i);
+
+                    int newInternalEdges1 = countInternalEdges(subset1, matrix);
+                    int newInternalEdges2 = countInternalEdges(subset2, matrix);
+
+                    cout << "Внутренние пересечения среди 1 массива вершин: " << newInternalEdges1 << endl;
+                    cout << "Внутренние пересечения среди 2 массива вершин: " << newInternalEdges2 << endl << endl;
+
+                    outVertex(subset1, subset2);
+
                     improvement = false;
                 }
             }
-            break;
         }
     }
-
-    return subset1, subset2;
 }
 
 //Выводит внутренние связи
@@ -134,8 +137,8 @@ void findInternalEdgesInSubsets(set<int>& subset1, set<int>& subset2, const vect
     int internalEdges1 = countInternalEdges(subset1, matrix);
     int internalEdges2 = countInternalEdges(subset2, matrix);
 
-    cout << "Number of internal edges in subset v1-v4: " << internalEdges1 << endl;
-    cout << "Number of internal edges in subset v5-v8: " << internalEdges2 << endl;
+    cout << "Внутренние пересечения среди 1 массива вершин: " << internalEdges1 << endl;
+    cout << "Внутренние пересечения среди 2 массива вершин: " << internalEdges2 << endl << endl;
 }
 
 int main() {
@@ -149,6 +152,7 @@ int main() {
     int N = 0;
     int L = 0;
 
+
     string filename = "schemeMatr.txt";
     vector<vector<int>> matrix = readMatrixFromFile(filename, N, L);
 
@@ -156,10 +160,17 @@ int main() {
     outMatr(matrix);
     cout << endl;
 
+
     findInternalEdgesInSubsets(subset1, subset2, matrix);
+    outVertex(subset1, subset2);
 
-    subset1, subset2 = optimize(matrix);
+    optimize(subset1, subset2, matrix);
 
+    cout << "На выводе получам такие разделения на платe, которые имеют наибольшее число внутренних пересечений: " << endl;
 
+    outVertex(subset1, subset2);
+
+    cout << "С числом внутренних пересечений: " << endl << "Для первого массива: " << countInternalEdges(subset1, matrix) << endl << "И для второго: " << countInternalEdges(subset2, matrix) << endl;
+    
     return 0;
 }

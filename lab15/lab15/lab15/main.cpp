@@ -42,7 +42,7 @@ vector<vector<int>> fillMatr(int a, int b) {
     ans[0][0] = a;
     ans[1][1] = b;
 
-    int c = (a % 8) + 1; // Используем следующую вершину по порядку
+    int c = (a % 8) + 1;
 
     while (c == a || c == b) {
         c = (c % 8) + 1;
@@ -95,7 +95,7 @@ void findIntersectingVertices(vector<vector<int>>& ans, const vector<vector<int>
                     intersectingVertices.insert(intersections[v].begin(), intersections[v].end());
                 }
 
-                // Найти вершину, которая еще не использовалась
+
                 int selectedVertex = 0;
                 for (int vertex : intersectingVertices) {
                     if (usedVertices.find(vertex) == usedVertices.end()) {
@@ -104,7 +104,6 @@ void findIntersectingVertices(vector<vector<int>>& ans, const vector<vector<int>
                     }
                 }
 
-                // Если не нашлось новой вершины, заполняем 0
                 if (selectedVertex == 0) {
                     ans[i][j] = 0;
                 }
@@ -172,13 +171,9 @@ void optimizeMatrix1by1(vector<vector<int>>& matrix, const vector<vector<int>>& 
                         i++;
                         if (x1 == x2 && y1 == y2) continue;
 
-                        cout << bestLength << " " << matrix[x1][y1] << " " << matrix[x2][y2] << endl;
-
                         swap(matrix[x1][y1], matrix[x2][y2]);
 
                         int newLength = calculatePathLength(matrix, intersections);
-
-                        cout << newLength << " " << matrix[x1][y1] << " " << matrix[x2][y2] << endl;
 
                         if (newLength < bestLength) {
                             bestLength = newLength;
